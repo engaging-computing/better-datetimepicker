@@ -185,9 +185,14 @@ class DateTimePicker
     currDate  = moment(@time).startOf('month').startOf('week')
     currMonth = @time.month()
     for i in [0..41]
+      m = currDate.month() - currMonth
+      if m < -1
+        m += 12
+      else if m > 1
+        m -= 12
       dates.push
         date:  currDate.date()
-        month: currDate.month() - currMonth
+        month: m
       currDate.add 1, 'days'
 
     # update the DOM object to display the dates of the current month
@@ -350,11 +355,7 @@ class DateTimePicker
 
   calendarPick: (e) =>
     td = $(e.target)
-    dir = td.attr('data-month') - @time.month()
-    if dir > 1
-      dir -= 12
-    else if dir < -1
-      dir += 12
+    dir = td.attr('data-month')
     if dir == 0
       @time.date parseInt td.attr 'data-date'
       active = td.closest('tbody').find('.dt-select')
