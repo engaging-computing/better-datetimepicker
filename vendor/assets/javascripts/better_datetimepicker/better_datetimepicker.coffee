@@ -356,22 +356,18 @@ class DateTimePicker
   calendarPick: (e) =>
     td = $(e.target)
     dir = parseInt td.attr('data-month')
-    console.log dir
     if dir == 0
       @time.date parseInt td.attr 'data-date'
-      console.log "A1: #{@time.format 'YYYY/MM/DD HH:mm:ss'}"
       active = td.closest('tbody').find('.dt-select')
       active.removeClass 'dt-select'
       td.addClass 'dt-select'
     else
       @time.add dir, 'months'
       @time.date parseInt td.attr 'data-date'
-      console.log "A2: #{@time.format 'YYYY/MM/DD HH:mm:ss'}, dir: #{dir}"
       @buildCalendar()
       @buildMonthList()
       @buildYearList()
     @changeEvent @time
-    console.log "B: #{@time.format 'YYYY/MM/DD HH:mm:ss'}"
 
   openSelectMenu: (field, dropdown) =>
     event_name = "click.better_datetimepicker_openselectmenu_#{field.attr 'id'}"
