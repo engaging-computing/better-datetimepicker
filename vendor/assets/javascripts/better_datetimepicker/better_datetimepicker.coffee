@@ -59,6 +59,12 @@ $.fn.extend
   datetimepicker: (args) ->
     # supply defaults if needed
     args = addDefaults args,
+      keyEventOn: (e) ->
+        $(document).on 'keyup.better_datetimepicker', e
+      keyEventOff: ->
+        $(document).off 'keyup.better_datetimepicker'
+      keyPress: (e) ->
+        e.keyCode
       onOpen: ->
         moment()
       onChange: (newTime) ->
@@ -97,6 +103,7 @@ class DateTimePicker
   jqObj: null     # jQuery object for DTPicker UI element
   skip: false     # handles DOM abnormalities relating to opening
   anchor: null
+  args: {}
   changeEvent: (val) ->
   closeEvent: (val) ->
   keyEvents: {}
@@ -111,7 +118,7 @@ class DateTimePicker
     #@openMenu 100, 100, @time, $('#slickgrid-container > .slick-viewport')
 
   # methods
-  openMenu: (x, y, time, anchor, @changeEvent, @closeEvent, autoClose) =>
+  openMenu: (x, y, time, anchor, autoClose, @args) =>
     if anchor != @anchor
       @anchor = anchor
       @anchor.css
@@ -128,7 +135,7 @@ class DateTimePicker
 
     unless @time.isValid()
       @time = moment()
-      @changeEvent(@time)
+      @args.onChange(@time)
 
     @jqObj.show()
     @jqObj.css
@@ -149,15 +156,18 @@ class DateTimePicker
     @jqObj.on 'click.better_datetimepicker', '#dt-time-select  option', @selectFromMenu @jqObj.find('#dt-time-textbox'), 'time'
     @jqObj.on 'keyup.better_datetimepicker', '#dt-year-textbox', @enterValue @jqObj.find('#dt-year-textbox'), 'year'
     @jqObj.on 'keyup.better_datetimepicker', '#dt-time-textbox', @enterValue @jqObj.find('#dt-time-textbox'), 'time'
-    $(document).on 'keyup.better_datetimepicker', @handleKeys()
+    @jqObj.on 'blur.better_datetimepicker', '#dt-time-textbox', @enterValue @jqObj.find('#dt-time-textbox'), 'time'
+    @jqObj.on 'blur.better_datetimepicker', '#dt-year-textbox', @enterValue @jqObj.find('#dt-year-textbox'), 'year'
+
+    @args.keyEventOn @handleKeys
 
     @buildCalendar()
     @buildMonthList()
     @buildYearList()
     @buildTimeList()
 
-  closeMenu: =>
-    @closeEvent(@time)
+  closeMenu: ->
+    @args.onClose(@time)
     @jqObj.hide()
     $(document).off 'click.better_datetimepicker'
     @jqObj.find('.dt-arrow').off 'click.better_datetimepicker'
@@ -166,7 +176,9 @@ class DateTimePicker
     @jqObj.find('#dt-year-textbox').off 'click.better_datetimepicker'
     @jqObj.off 'click.better_datetimepicker'
     @jqObj.off 'keyup.better_datetimepicker'
-    $(document).off 'keyup.better_datetimepicker'
+    @jqObj.off 'bur.better_datetimepicker'
+
+    @args.keyEventOff @handleKeys
 
   # DOM functions
   buildCalendar: =>
@@ -351,7 +363,7 @@ class DateTimePicker
     @buildCalendar()
     @buildMonthList()
     @buildYearList()
-    @changeEvent @time
+    @args.onChange @time
 
   calendarPick: (e) =>
     td = $(e.target)
@@ -367,7 +379,7 @@ class DateTimePicker
       @buildCalendar()
       @buildMonthList()
       @buildYearList()
-    @changeEvent @time
+    @args.onChange @time
 
   openSelectMenu: (field, dropdown) =>
     event_name = "click.better_datetimepicker_openselectmenu_#{field.attr 'id'}"
@@ -380,7 +392,7 @@ class DateTimePicker
               dropdown.hide()
         , 1
       dropdown.show()
-      @changeEvent @time
+      @args.onChange @time
 
   selectFromMenu: (field, updateType) =>
     (e) =>
@@ -392,18 +404,18 @@ class DateTimePicker
         @time.startOf('day').hours(time.hours()).minutes(time.minutes()).seconds(time.seconds())
       else
         @time.set updateType, value
-        $(e.target).parent().hide()
-        $(document).off "click.better_datetimepicker_openselectmenu_#{field.attr 'id'}"
+        #$(e.target).parent().hide()
+        #$(document).off "click.better_datetimepicker_openselectmenu_#{field.attr 'id'}"
 
       @buildCalendar()
       @buildMonthList()
       @buildYearList()
       @buildTimeList()
-      @changeEvent @time
+      @args.onChange @time
 
   enterValue: (field, updateType) =>
     (e) =>
-      unless e.keyCode == 13
+      if e.keyCode? and e.keyCode != 13
         return
 
       value = $(e.target).val()
@@ -422,7 +434,7 @@ class DateTimePicker
       @buildMonthList()
       @buildYearList()
       @buildTimeList()
-      @changeEvent @time
+      @args.onChange @time
 
   registerKeyEvent: (keyCode, eventFunc) =>
     @keyEvents[keyCode] = eventFunc
@@ -430,12 +442,12 @@ class DateTimePicker
   clearKeyEvents: =>
     @keyEvents = {}
 
-  handleKeys: =>
-    (e) =>
-      if not @keyBlocks.hasOwnProperty(e.keyCode) and @keyEvents.hasOwnProperty(e.keyCode)
-        @keyEvents[e.keyCode] e
-      else if not @keyBlocks.hasOwnProperty(e.keyCode) and @keyEvents.hasOwnProperty('default')
-        @keyEvents.default e
+  handleKeys: (e) =>
+    keyCode = @args.keyPress e
+    if not @keyBlocks.hasOwnProperty(keyCode) and @keyEvents.hasOwnProperty(keyCode)
+      @keyEvents[keyCode] e
+    else if not @keyBlocks.hasOwnProperty(keyCode) and @keyEvents.hasOwnProperty('default')
+      @keyEvents.default e
 
 
 
@@ -452,7 +464,7 @@ class DateTimePickerRef
   constructor: (@args, @elem) ->
 
   open: ->
-    @elem.openMenu 0, 0, @args.onOpen(), @args.anchor, @args.onChange, @args.onClose, @args.autoClose
+    @elem.openMenu 0, 0, @args.onOpen(), @args.anchor, @args.autoClose, @args
 
     for key of @args.onKeys
       @elem.registerKeyEvent key, @args.onKeys[key]
