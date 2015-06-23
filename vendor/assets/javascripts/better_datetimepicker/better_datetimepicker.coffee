@@ -176,7 +176,7 @@ class DateTimePicker
     @jqObj.find('#dt-year-textbox').off 'click.better_datetimepicker'
     @jqObj.off 'click.better_datetimepicker'
     @jqObj.off 'keyup.better_datetimepicker'
-    @jqObj.off 'bur.better_datetimepicker'
+    @jqObj.off 'blur.better_datetimepicker'
 
     @args.keyEventOff @handleKeys
 
