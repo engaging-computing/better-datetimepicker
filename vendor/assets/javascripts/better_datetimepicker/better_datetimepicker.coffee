@@ -151,9 +151,9 @@ class DateTimePicker
     @jqObj.find('#dt-date-group').on 'click.better_datetimepicker', 'td', @calendarPick
     @jqObj.find('#dt-month-textbox').on 'click.better_datetimepicker', @openSelectMenu @jqObj.find('#dt-month-textbox'), @jqObj.find('#dt-month-select')
     @jqObj.find('#dt-year-textbox').on 'click.better_datetimepicker', @openSelectMenu @jqObj.find('#dt-year-textbox'), @jqObj.find('#dt-year-select')
-    @jqObj.on 'click.better_datetimepicker', '#dt-month-select option', @selectFromMenu @jqObj.find('#dt-month-textbox'), 'month'
-    @jqObj.on 'click.better_datetimepicker', '#dt-year-select  option', @selectFromMenu @jqObj.find('#dt-year-textbox'), 'year'
-    @jqObj.on 'click.better_datetimepicker', '#dt-time-select  option', @selectFromMenu @jqObj.find('#dt-time-textbox'), 'time'
+    @jqObj.on 'change.better_datetimepicker', '#dt-month-select', @selectFromMenu @jqObj.find('#dt-month-textbox'), 'month'
+    @jqObj.on 'change.better_datetimepicker', '#dt-year-select', @selectFromMenu @jqObj.find('#dt-year-textbox'), 'year'
+    @jqObj.on 'change.better_datetimepicker', '#dt-time-select', @selectFromMenu @jqObj.find('#dt-time-textbox'), 'time'
     @jqObj.on 'keyup.better_datetimepicker', '#dt-year-textbox', @enterValue @jqObj.find('#dt-year-textbox'), 'year'
     @jqObj.on 'keyup.better_datetimepicker', '#dt-time-textbox', @enterValue @jqObj.find('#dt-time-textbox'), 'time'
     @jqObj.on 'blur.better_datetimepicker', '#dt-time-textbox', @enterValue @jqObj.find('#dt-time-textbox'), 'time'
